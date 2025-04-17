@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #b22222;
+            --hover-color: #8b1a1a;
+        }
+
+        .card-hover {
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(178, 34, 34, 0.2);
+        }
+
+        .active-tab {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .badge-status {
+            padding: 0.5em 1em;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-hospital"></i> Hospital Admin
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active-tab" href="#" data-section="dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="doctors">Doctors</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="patients">Patients</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard -->
+    <section id="dashboard" class="container py-4 section-content">
+        <div class="row g-4" id="dashboardCards"></div>
+    </section>
+
+    <!-- Doctors Management -->
+    <section id="doctors" class="container py-4 section-content" style="display: none;">
+        <div class="d-flex justify-content-between mb-4">
+            <h3 class="text-danger"><i class="fas fa-user-md"></i> Doctors</h3>
+            <button class="btn btn-danger" onclick="showDoctorModal()">
+                <i class="fas fa-plus"></i> Add Doctor
+            </button>
+        </div>
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="doctorsTable">
+                        <thead class="table-danger">
+                            <tr>
+                                <th>Name</th>
+                                <th>Specialty</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doctorsList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Patients Management -->
+    <section id="patients" class="container py-4 section-content" style="display: none;">
+        <div class="d-flex justify-content-between mb-4">
+            <h3 class="text-danger"><i class="fas fa-procedures"></i> Patients</h3>
+            <button class="btn btn-danger" onclick="showPatientModal()">
+                <i class="fas fa-plus"></i> Add Patient
+            </button>
+        </div>
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="patientsTable">
+                        <thead class="table-danger">
+                            <tr>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Condition</th>
+                                <th>Doctor</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientsList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Doctor Modal -->
+    <div class="modal fade" id="doctorModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDoctorTitle">Add New Doctor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="doctorForm" onsubmit="handleDoctorSubmit(event)">
+                        <input type="hidden" id="doctorId">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="doctorName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Specialty</label>
+                            <input type="text" class="form-control" id="doctorSpecialty" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="doctorEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="doctorPhone" required>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Modal -->
+    <div class="modal fade" id="patientModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPatientTitle">Add New Patient</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="patientForm" onsubmit="handlePatientSubmit(event)">
+                        <input type="hidden" id="patientId">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="patientName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Age</label>
+                            <input type="number" class="form-control" id="patientAge" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Medical Condition</label>
+                            <input type="text" class="form-control" id="patientCondition" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Assigned Doctor</label>
+                            <select class="form-select" id="patientDoctor" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="patientStatus" required>
+                                <option value="Admitted">Admitted</option>
+                                <option value="Discharged">Discharged</option>
+                                <option value="Critical">Critical</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Data Storage
+        let doctors = [];
+        let patients = [];
+        let currentDoctorId = 1;
+        let currentPatientId = 1;
+
+        // Navigation System
+        document.querySelectorAll('[data-section]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.dataset.section;
+                document.querySelectorAll('.section-content').forEach(section => {
+                    section.style.display = 'none';
+                });
+                document.getElementById(sectionId).style.display = 'block';
+                document.querySelectorAll('.nav-link').forEach(navLink => {
+                    navLink.classList.remove('active-tab');
+                });
+                link.classList.add('active-tab');
+                
+                if(sectionId === 'doctors') renderDoctorsTable();
+                if(sectionId === 'patients') {
+                    populateDoctorDropdown();
+                    renderPatientsTable();
+                }
+            });
+        });
+
+        // Doctor Functions
+        function showDoctorModal(doctor = null) {
+            const modal = new bootstrap.Modal('#doctorModal');
+            const form = document.getElementById('doctorForm');
+            
+            if(doctor) {
+                document.getElementById('modalDoctorTitle').textContent = 'Edit Doctor';
+                document.getElementById('doctorId').value = doctor.id;
+                document.getElementById('doctorName').value = doctor.name;
+                document.getElementById('doctorSpecialty').value = doctor.specialty;
+                document.getElementById('doctorEmail').value = doctor.email;
+                document.getElementById('doctorPhone').value = doctor.phone;
+            } else {
+                form.reset();
+                document.getElementById('modalDoctorTitle').textContent = 'Add New Doctor';
+            }
+            
+            modal.show();
+        }
+
+        function handleDoctorSubmit(e) {
+            e.preventDefault();
+            const doctor = {
+                id: document.getElementById('doctorId').value || currentDoctorId++,
+                name: document.getElementById('doctorName').value,
+                specialty: document.getElementById('doctorSpecialty').value,
+                email: document.getElementById('doctorEmail').value,
+                phone: document.getElementById('doctorPhone').value
+            };
+
+            const index = doctors.findIndex(d => d.id == doctor.id);
+            if(index > -1) {
+                doctors[index] = doctor;
+            } else {
+                doctors.push(doctor);
+            }
+
+            renderDoctorsTable();
+            new bootstrap.Modal('#doctorModal').hide();
+        }
+
+        function renderDoctorsTable() {
+            const tbody = document.getElementById('doctorsList');
+            tbody.innerHTML = doctors.map(doctor => `
+                <tr>
+                    <td>${doctor.name}</td>
+                    <td>${doctor.specialty}</td>
+                    <td>${doctor.email}</td>
+                    <td>${doctor.phone}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="showDoctorModal(${JSON.stringify(doctor)})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger ms-2" onclick="deleteDoctor(${doctor.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteDoctor(id) {
+            doctors = doctors.filter(doctor => doctor.id !== id);
+            renderDoctorsTable();
+        }
+
+        // Patient Functions
+        function showPatientModal(patient = null) {
+            const modal = new bootstrap.Modal('#patientModal');
+            const form = document.getElementById('patientForm');
+            
+            if(patient) {
+                document.getElementById('modalPatientTitle').textContent = 'Edit Patient';
+                document.getElementById('patientId').value = patient.id;
+                document.getElementById('patientName').value = patient.name;
+                document.getElementById('patientAge').value = patient.age;
+                document.getElementById('patientCondition').value = patient.condition;
+                document.getElementById('patientStatus').value = patient.status;
+            } else {
+                form.reset();
+                document.getElementById('modalPatientTitle').textContent = 'Add New Patient';
+            }
+            
+            modal.show();
+        }
+
+        function handlePatientSubmit(e) {
+            e.preventDefault();
+            const patient = {
+                id: document.getElementById('patientId').value || currentPatientId++,
+                name: document.getElementById('patientName').value,
+                age: document.getElementById('patientAge').value,
+                condition: document.getElementById('patientCondition').value,
+                doctorId: document.getElementById('patientDoctor').value,
+                status: document.getElementById('patientStatus').value
+            };
+
+            const index = patients.findIndex(p => p.id == patient.id);
+            if(index > -1) {
+                patients[index] = patient;
+            } else {
+                patients.push(patient);
+            }
+
+            renderPatientsTable();
+            new bootstrap.Modal('#patientModal').hide();
+        }
+
+        function renderPatientsTable() {
+            const tbody = document.getElementById('patientsList');
+            tbody.innerHTML = patients.map(patient => {
+                const doctor = doctors.find(d => d.id == patient.doctorId);
+                return `
+                    <tr>
+                        <td>${patient.name}</td>
+                        <td>${patient.age}</td>
+                        <td>${patient.condition}</td>
+                        <td>${doctor ? doctor.name : 'Unassigned'}</td>
+                        <td>
+                            <span class="badge-status bg-${getStatusColor(patient.status)}">
+                                ${patient.status}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="showPatientModal(${JSON.stringify(patient)})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger ms-2" onclick="deletePatient(${patient.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function deletePatient(id) {
+            patients = patients.filter(patient => patient.id !== id);
+            renderPatientsTable();
+        }
+
+        function populateDoctorDropdown() {
+            const select = document.getElementById('patientDoctor');
+            select.innerHTML = doctors.map(doctor => 
+                `<option value="${doctor.id}">${doctor.name} (${doctor.specialty})</option>`
+            ).join('');
+        }
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'Admitted': return 'success';
+                case 'Critical': return 'danger';
+                case 'Discharged': return 'secondary';
+                default: return 'primary';
+            }
+        }
+
+        // Initialize Dashboard
+        function initializeDashboard() {
+            const dashboard = document.getElementById('dashboardCards');
+            const stats = {
+                doctors: doctors.length,
+                patients: patients.length,
+                appointments: patients.filter(p => p.status === 'Admitted').length,
+                specialties: [...new Set(doctors.map(d => d.specialty))].length
+            };
+
+            dashboard.innerHTML = `
+                <div class="col-md-3">
+                    <div class="card card-hover text-center py-3">
+                        <div class="card-body">
+                            <i class="fas fa-user-md fa-3x text-danger"></i>
+                            <h5 class="mt-2">Doctors</h5>
+                            <h2 class="text-danger">${stats.doctors}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-hover text-center py-3">
+                        <div class="card-body">
+                            <i class="fas fa-procedures fa-3x text-danger"></i>
+                            <h5 class="mt-2">Patients</h5>
+                            <h2 class="text-danger">${stats.patients}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-hover text-center py-3">
+                        <div class="card-body">
+                            <i class="fas fa-calendar-check fa-3x text-danger"></i>
+                            <h5 class="mt-2">Appointments</h5>
+                            <h2 class="text-danger">${stats.appointments}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-hover text-center py-3">
+                        <div class="card-body">
+                            <i class="fas fa-stethoscope fa-3x text-danger"></i>
+                            <h5 class="mt-2">Specialties</h5>
+                            <h2 class="text-danger">${stats.specialties}</h2>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initial Data for Demonstration
+        doctors = [
+            { id: 1, name: "Dr. John Smith", specialty: "Cardiology", email: "abel@hospital.com", phone: "+251954889050" },
+            { id: 2, name: "Dr. Sarah Johnson", specialty: "Pediatrics", email: "sofi@hospital.com", phone: "+251909160909" }
+        ];
+
+        patients = [
+            { id: 1, name: "Alice Brown", age: 35, condition: "Heart Condition", doctorId: 1, status: "Admitted" },
+            { id: 2, name: "Bob Wilson", age: 42, condition: "Fractured Arm", doctorId: 2, status: "Discharged" }
+        ];
+
+        // Initial Render
+        renderDoctorsTable();
+        renderPatientsTable();
+        initializeDashboard();
+    </script>
+</body>
+</html>
